@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Confirmar Email</title>
   <link rel="stylesheet" href="styles.css">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <div class="container">
@@ -14,90 +13,18 @@
         <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
         </svg>
-        <h1>Confirmando tu email</h1>
-        <p class="subtitle">Por favor espera un momento...</p>
+        <h1>Email confirmado</h1>
+        <p class="subtitle">¡Tu cuenta está lista!</p>
       </div>
 
-      <div id="message"></div>
-      <div id="loading" style="text-align: center;">
-        <div style="display: inline-block; width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: #667eea; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+      <div id="message">
+        <div class="success">
+          <h3 style="margin-bottom: 8px;">✅ Email confirmado</h3>
+          <p>¡Tu cuenta está lista! Ya puedes iniciar sesión.</p>
+        </div>
       </div>
     </div>
   </div>
-
-  <style>
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-  </style>
-
-  <script>
-    const SUPABASE_URL = 'https://ilzyyicbqlqbmyjcrhsd.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlsenl5aWNicWxxYm15amNyaHNkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUzMTUwMDcsImV4cCI6MjA4MDg5MTAwN30.oRKWOMHgQCXo751SmDXVtdbNZ1xEq17z5gXBdXKswUg';
-
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-    async function confirmEmail() {
-      const messageDiv = document.getElementById('message');
-      const loadingDiv = document.getElementById('loading');
-
-      try {
-        // Obtener el hash de la URL (viene después de #)
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        const accessToken = hashParams.get('access_token');
-        const type = hashParams.get('type');
-
-        console.log('Type:', type);
-        console.log('Access Token:', accessToken ? 'Present' : 'Missing');
-
-        if (!accessToken) {
-          throw new Error('No se encontró el token de confirmación');
-        }
-
-        if (type !== 'signup') {
-          throw new Error('Este enlace no es válido para confirmación de email');
-        }
-
-        // Establecer la sesión con el token
-        const { data, error } = await supabase.auth.setSession({
-          access_token: accessToken,
-          refresh_token: hashParams.get('refresh_token')
-        });
-
-        if (error) throw error;
-
-        loadingDiv.style.display = 'none';
-        
-        // Cambiar título
-        document.querySelector('h1').textContent = 'Email confirmado';
-        document.querySelector('.subtitle').textContent = '¡Tu cuenta está lista!';
-        
-        messageDiv.innerHTML = `
-          <div class="success">
-            <h3 style="margin-bottom: 8px;">✅ Confirmación exitosa</h3>
-            <p>Ya puedes iniciar sesión en la app.</p>
-          </div>
-        `;
-
-      } catch (error) {
-        console.error('Error:', error);
-        loadingDiv.style.display = 'none';
-        messageDiv.innerHTML = `
-          <div class="error">
-            <strong>❌ Error al confirmar email</strong>
-            <p style="margin-top: 8px;">${error.message}</p>
-          </div>
-          <p style="margin-top: 16px; text-align: center;">
-            <button class="btn" onclick="window.location.reload()">
-              Intentar de nuevo
-            </button>
-          </p>
-        `;
-      }
-    }
-
-    // Ejecutar cuando la página cargue
-    window.addEventListener('load', confirmEmail);
-  </script>
+  <!-- Página estática: mensaje de confirmación mostrado directamente -->
 </body>
 </html>
