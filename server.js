@@ -13,14 +13,22 @@ try {
   console.log('Dirname:', __dirname);
   console.log('Public path:', path.join(__dirname, 'public'));
   
+  // Servir archivos estáticos
   app.use(express.static(path.join(__dirname, 'public')));
   
+  // Ruta principal
   app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'reset-password.html'));
   });
   
+  // Ruta para resetear contraseña
   app.get('/reset-password', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'reset-password.html'));
+  });
+  
+  // Ruta para confirmar email (NUEVA)
+  app.get('/confirm-email', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'confirm-email.html'));
   });
   
   app.listen(PORT, '0.0.0.0', () => {
