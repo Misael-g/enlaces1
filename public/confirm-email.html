@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Confirmar Email</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * {
       margin: 0;
@@ -23,7 +24,6 @@
       overflow: hidden;
     }
 
-    /* Animación de fondo */
     body::before {
       content: '';
       position: absolute;
@@ -144,15 +144,34 @@
       border-left: 4px solid #28a745;
     }
 
-    .success h3 {
+    .error {
+      background: linear-gradient(135deg, #fed7d7 0%, #fca5a5 100%);
+      color: #c53030;
+      padding: 20px;
+      border-radius: 16px;
+      margin-bottom: 24px;
+      border-left: 4px solid #e53e3e;
+    }
+
+    .loading {
+      background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e0 100%);
+      color: #4a5568;
+      padding: 20px;
+      border-radius: 16px;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+
+    .success h3, .error h3, .loading h3 {
       font-size: 20px;
       margin-bottom: 8px;
       display: flex;
       align-items: center;
       gap: 8px;
+      justify-content: center;
     }
 
-    .success p {
+    .success p, .error p, .loading p {
       font-size: 15px;
       line-height: 1.6;
       opacity: 0.9;
@@ -194,7 +213,20 @@
       transform: translateY(0);
     }
 
-    /* Responsive */
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #e2e8f0;
+      border-top-color: #667eea;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 16px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
     @media (max-width: 480px) {
       .card {
         padding: 36px 28px;
@@ -225,30 +257,85 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
           </svg>
         </div>
-        <h1>¡Email Confirmado!</h1>
-        <p class="subtitle">Tu cuenta ha sido verificada exitosamente</p>
+        <h1>Confirmar Email</h1>
+        <p class="subtitle">Estamos verificando tu cuenta</p>
       </div>
 
       <div id="message">
-        <div class="success">
-          <h3>
-            <span>✨</span>
-            Cuenta activada
-          </h3>
-          <p>¡Bienvenido! Tu cuenta está completamente configurada y lista para usar. Ya puedes acceder a todas las funcionalidades de la aplicación.</p>
+        <div class="loading">
+          <div class="spinner"></div>
+          <h3>Confirmando tu cuenta...</h3>
+          <p>Por favor espera un momento</p>
         </div>
-
-        <div class="divider"></div>
-
-        <div class="action-text">
-          Ahora puedes cerrar esta ventana y volver a la app
-        </div>
-
-        <button class="btn" onclick="window.close()">
-          Volver a la App
-        </button>
       </div>
     </div>
   </div>
+
+  <script src="app.js"></script>
+  <script>
+    const SUPABASE_URL = 'https://jcwlwkidlqztauodwgfe.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impjd2x3a2lkbHF6dGF1b2R3Z2ZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0NzYzNjEsImV4cCI6MjA4MTA1MjM2MX0.rDObB9iAdoeKG15HNC1PeqL4Msvl8hQaScNHHMKEcHA';
+    
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const messageDiv = document.getElementById('message');
+
+    // Obtener los parámetros de la URL
+    const params = new URLSearchParams(window.location.hash.substring(1) || window.location.search);
+    const tokenHash = params.get('token_hash');
+    const type = params.get('type');
+
+    async function confirmEmail() {
+      if (!tokenHash) {
+        showMessage('No se encontró el token de confirmación', 'error');
+        return;
+      }
+
+      try {
+        // Verificar el token con Supabase
+        const { data, error } = await supabase.auth.verifyOtp({
+          token_hash: tokenHash,
+          type: type || 'signup'
+        });
+
+        if (error) throw error;
+
+        // Éxito
+        showMessage(
+          `<h3><span>✨</span> Cuenta activada</h3>
+          <p>¡Bienvenido! Tu cuenta está completamente configurada y lista para usar.</p>`,
+          'success'
+        );
+
+        // Opcional: Redirigir después de unos segundos
+        setTimeout(() => {
+          window.close();
+        }, 3000);
+
+      } catch (error) {
+        console.error('Error:', error);
+        showMessage(
+          `<h3>❌ Error al confirmar</h3>
+          <p>${error.message || 'No se pudo confirmar tu cuenta. El enlace puede haber expirado.'}</p>`,
+          'error'
+        );
+      }
+    }
+
+    function showMessage(html, type) {
+      messageDiv.innerHTML = `
+        <div class="${type}">
+          ${html}
+        </div>
+        ${type === 'success' ? `
+          <div class="divider"></div>
+          <div class="action-text">Puedes cerrar esta ventana</div>
+          <button class="btn" onclick="window.close()">Volver a la App</button>
+        ` : ''}
+      `;
+    }
+
+    // Ejecutar la confirmación cuando cargue la página
+    confirmEmail();
+  </script>
 </body>
 </html>
